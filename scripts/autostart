@@ -1,0 +1,14 @@
+#!/bin/bash -xve
+
+check_linuxqq() {
+    while true; do
+        running_process=$(ps aux | grep -v grep | grep /opt/QQ/qq)
+        if [ -z "$running_process" ]; then
+            echo "LinuxQQ not running, start it"
+            urxvt -e /opt/QQ/qq &
+        fi
+        sleep 3
+    done
+}
+
+check_linuxqq &
