@@ -14,23 +14,25 @@ RUN export PKGEXT=.pkg.tar \
 FROM archlinux:latest AS novnc
 RUN pacman -Syu --noconfirm git \
     && git clone --depth=1 https://github.com/novnc/noVNC.git /opt/noVNC \
+    && ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html \
     && git clone --depth=1 https://github.com/kanaka/websockify /opt/noVNC/utils/websockify \
     && find /opt/noVNC -name ".git" | xargs rm -rf
 
 # Stage 3, build image
 FROM archlinux:latest
+COPY ./scripts /scripts
 COPY --from=novnc /opt/noVNC /opt/noVNC
 RUN --mount=type=bind,from=builder,target=/linuxqq,source=/linuxqq \
     pacman -Sy --noconfirm \
     xorg-server xorg-server-xvfb x11vnc \
-    openbox rxvt-unicode openjpeg2 adobe-source-han-sans-cn-fonts \
+    openbox rxvt-unicode openjpeg2 wqy-zenhei \
     python supervisor \
     && pacman -U --noconfirm /linuxqq/linuxqq.pkg.tar \
-    && pacman -Scc --noconfirm
+    && yes | pacman -Scc 
 RUN mkdir -p /var/log/supervisor/ \
     && useradd -m -s /bin/bash user \
-    && echo "urxvt -e linuxqq &" >> /etc/xdg/openbox/autostart 
-COPY supervisord.ini /etc/supervisor.d/supervisord.ini
+    && ln -s /scripts/supervisord.ini /etc/supervisor.d/supervisor.ini \
+    && ln -sf /scripts/autostart /etc/xdg/openbox/autostart
 WORKDIR /var/log/supervisor/
 EXPOSE 8083
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor.d/supervisord.ini"]
+CMD ["/usr/bin/supervisord"]
