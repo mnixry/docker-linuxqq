@@ -8,7 +8,7 @@ name: Docker Image CI
 on:
   push:
   schedule:
-    - cron: "* */1 * * *"
+    - cron: "0 */2 * * *"
 
 env:
   REGISTRY: ghcr.io
@@ -50,7 +50,7 @@ jobs:
         with:
           tags: |
             type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}},priority=0
             type=raw,value=${{ steps.upstream.outputs.pkgver }}-${{ steps.upstream.outputs.pkgrel }},enable={{is_default_branch}}
             type=raw,value=${{ steps.upstream.outputs.pkgver }}-${{ steps.upstream.outputs.pkgrel }}-${{ steps.upstream.outputs.hash }},enable={{is_default_branch}}
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
