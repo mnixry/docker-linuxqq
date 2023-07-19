@@ -3,7 +3,7 @@
 EXTRA_ARGS="--file-only"
 CERT_PATH=/etc/novnc.pem
 
-if [ -n "USE_SSL" ]; then
+if [ -n "$USE_SSL" ]; then
     if [ ! -f "$CERT_PATH" ]; then
         openssl req -x509 -nodes -newkey rsa:2048 \
             -keyout $CERT_PATH -out $CERT_PATH -days 3650 \
