@@ -20,19 +20,19 @@ RUN pacman -Sy --noconfirm git \
 
 # Stage 3, build image
 FROM archlinux:latest
-COPY ./scripts /scripts
 COPY --from=novnc /opt/noVNC /opt/noVNC
 RUN --mount=type=bind,from=builder,target=/linuxqq,source=/linuxqq \
     pacman -Sy --noconfirm \
+    net-tools openssl sudo \
     xorg-server xorg-server-xvfb tigervnc \
     openbox rxvt-unicode wqy-zenhei \
     python supervisor \
     && pacman -U --noconfirm /linuxqq/linuxqq.pkg.tar \
     && yes | pacman -Scc 
+COPY ./scripts /scripts
 RUN mkdir -p /var/log/supervisor/ \
     && useradd -m -s /bin/bash user \
-    && ln -s /scripts/supervisord.ini /etc/supervisor.d/supervisor.ini \
     && ln -sf /scripts/autostart /etc/xdg/openbox/autostart
 WORKDIR /var/log/supervisor/
 EXPOSE 8083
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["/usr/bin/supervisord", "-c", "/scripts/supervisord.ini"]

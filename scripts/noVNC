@@ -1,0 +1,20 @@
+#!/bin/bash -xve
+
+EXTRA_ARGS="--file-only"
+CERT_PATH=/etc/novnc.pem
+
+if [ -n "USE_SSL" ]; then
+    if [ ! -f "$CERT_PATH" ]; then
+        openssl req -x509 -nodes -newkey rsa:2048 \
+            -keyout $CERT_PATH -out $CERT_PATH -days 3650 \
+            -subj "/O=noVNC/CN=$(uname -n)"
+        chmod 400 $CERT_PATH
+        chown daemon:daemon $CERT_PATH
+    fi
+    EXTRA_ARGS="$EXTRA_ARGS --cert $CERT_PATH --ssl-only"
+fi
+
+cd /opt/noVNC
+
+sudo -u daemon \
+    ./utils/novnc_proxy $EXTRA_ARGS --vnc localhost:5900 --listen 8083
