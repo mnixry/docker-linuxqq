@@ -8,6 +8,8 @@ if [ -n "$VNC_PASSWORD" ]; then
     echo $VNC_PASSWORD | vncpasswd -f > $PASSWORD_PATH
     chmod 400 $PASSWORD_PATH
     EXTRA_ARGS="$EXTRA_ARGS -rfbauth $PASSWORD_PATH"
+else
+    EXTRA_ARGS="$EXTRA_ARGS -SecurityTypes None"
 fi
 
 x0vncserver -display :0 $EXTRA_ARGS -localhost
