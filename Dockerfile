@@ -1,18 +1,18 @@
 # Stage 1, build linux QQNT package from AUR
 FROM archlinux:latest AS builder
-RUN pacman -Syu --noconfirm git base-devel \
+RUN pacman -Sy --noconfirm git base-devel \
     && git clone https://aur.archlinux.org/linuxqq.git --depth=1 \
     && chown -R daemon:daemon /linuxqq \
     && echo "daemon ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 WORKDIR /linuxqq
 USER daemon
-RUN export PKGEXT=.pkg.tar \
-    && makepkg --syncdeps --noconfirm --needed \
+ENV PKGEXT=.pkg.tar
+RUN makepkg --syncdeps --noconfirm --needed \
     && mv linuxqq-*.pkg.tar linuxqq.pkg.tar
 
 # Stage 2, download noVNC and websockify
 FROM archlinux:latest AS novnc
-RUN pacman -Syu --noconfirm git \
+RUN pacman -Sy --noconfirm git \
     && git clone --depth=1 https://github.com/novnc/noVNC.git /opt/noVNC \
     && ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html \
     && git clone --depth=1 https://github.com/kanaka/websockify /opt/noVNC/utils/websockify \
@@ -24,8 +24,8 @@ COPY ./scripts /scripts
 COPY --from=novnc /opt/noVNC /opt/noVNC
 RUN --mount=type=bind,from=builder,target=/linuxqq,source=/linuxqq \
     pacman -Sy --noconfirm \
-    xorg-server xorg-server-xvfb x11vnc \
-    openbox rxvt-unicode openjpeg2 wqy-zenhei \
+    xorg-server xorg-server-xvfb tigervnc \
+    openbox rxvt-unicode wqy-zenhei \
     python supervisor \
     && pacman -U --noconfirm /linuxqq/linuxqq.pkg.tar \
     && yes | pacman -Scc 
@@ -35,4 +35,4 @@ RUN mkdir -p /var/log/supervisor/ \
     && ln -sf /scripts/autostart /etc/xdg/openbox/autostart
 WORKDIR /var/log/supervisor/
 EXPOSE 8083
-CMD ["/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
