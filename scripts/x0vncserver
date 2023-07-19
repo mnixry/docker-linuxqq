@@ -1,0 +1,13 @@
+#!/bin/bash -xve
+
+PASSWORD_PATH=/etc/x11vnc.passwd
+EXTRA_ARGS=""
+
+# if vnc password set, write password to file
+if [ -n "$VNC_PASSWORD" ]; then
+    echo $VNC_PASSWORD | vncpasswd -f > $PASSWORD_PATH
+    chmod 400 $PASSWORD_PATH
+    EXTRA_ARGS="$EXTRA_ARGS -rfbauth $PASSWORD_PATH"
+fi
+
+x0vncserver -display :0 $EXTRA_ARGS -localhost
